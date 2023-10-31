@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: opensearch-data-prepper
+spec:
+  selector:
+    app: opensearch-data-prepper
+  ports:
+    - protocol: TCP
+      port: 21890
+      targetPort: 21890

@@ -1,0 +1,71 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: data-prepper-pipelines
+data:
+  pipelines.yaml: |
+    otel-trace-pipeline:
+      workers: 8 
+      delay: "100"
+
+      source:
+        otel_trace_source:
+          ssl: false
+          authentication:
+            unauthenticated:
+
+      buffer:
+        bounded_blocking:
+          buffer_size: 25600
+          batch_size: 400
+  
+      sink:
+        - pipeline:
+            name: "raw-pipeline"
+        - pipeline:
+            name: "service-map-pipeline"
+
+    raw-pipeline:
+      workers: 8 
+      delay: "3000" 
+      source:
+        pipeline:
+          name: "otel-trace-pipeline"
+
+      buffer:
+          bounded_blocking:
+            buffer_size: 25600
+            batch_size: 3200
+
+      processor:
+        - otel_trace_raw:
+        - otel_trace_group:
+            hosts: [ "https://opensearch-cluster-master:9200" ]
+            # Change to your credentials
+            username: "admin"
+            password: "xxxxx"
+      sink:
+        - opensearch:
+            hosts: [ "https://opensearch-cluster-master:9200" ]
+            index_type: trace-analytics-raw
+            username: "admin"
+            password: "xxxxx"
+    service-map-pipeline:
+      workers: 8
+      delay: "100"
+      source:
+        pipeline:
+          name: "otel-trace-pipeline"
+      processor:
+        - service_map_stateful:
+            window_duration: 180 
+      buffer:
+          bounded_blocking:
+            buffer_size: 25600
+            batch_size: 400
+      sink:
+        - opensearch:
+            hosts: [ "https://opensearch-cluster-master:9200" ]
+            index_type: trace-analytics-service-map
+            username: "admin"
+            password: "xxxxx"

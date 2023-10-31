@@ -1,0 +1,45 @@
+- hosts: localhost
+  tasks:
+    - name: Add helm repo OpenSearch
+      kubernetes.core.helm_repository:
+        name: opensearch
+        repo_url: "https://opensearch-project.github.io/helm-charts"
+
+- hosts: localhost
+  tasks:
+    - name: Install Opensearch
+      kubernetes.core.helm:
+        kubeconfig: /etc/rancher/k3s/k3s.yaml
+        name: opensearch
+        namespace: opensearch
+        chart_ref: opensearch/opensearch
+        create_namespace: true
+        values:
+          singleNode: true
+
+- hosts: localhost
+  tasks:
+    - name: Install Opensearch Dashboards
+      kubernetes.core.helm:
+        kubeconfig: /etc/rancher/k3s/k3s.yaml
+        name: opensearch-dashboards
+        namespace: opensearch
+        chart_ref: opensearch/opensearch-dashboards
+        create_namespace: true
+
+- hosts: localhost
+  tasks:
+    - name: Add helm repo OpenTelemetry
+      kubernetes.core.helm_repository:
+        name: open-telemetry
+        repo_url: "https://open-telemetry.github.io/opentelemetry-helm-charts"
+
+- hosts: localhost
+  tasks:
+    - name: Install OpenTelemetry Operator
+      kubernetes.core.helm:
+        kubeconfig: /etc/rancher/k3s/k3s.yaml
+        name: opentelemetry-operator
+        namespace: opentelemetry
+        chart_ref: open-telemetry/opentelemetry-operator
+        create_namespace: true

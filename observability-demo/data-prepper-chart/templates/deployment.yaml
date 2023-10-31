@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opensearch-data-prepper
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: opensearch-data-prepper
+  template:
+    metadata:
+      labels:
+        app: opensearch-data-prepper
+    spec:
+      containers:
+      - name: opensearch-data-prepper
+        image: opensearchproject/data-prepper:latest
+        ports:
+        - containerPort: 21890
+        volumeMounts:
+        - name: config-volume
+          mountPath: /usr/share/data-prepper/pipelines/pipelines.yaml
+          subPath: pipelines.yaml
+      volumes:
+      - name: config-volume
+        configMap:
+          name: data-prepper-pipelines

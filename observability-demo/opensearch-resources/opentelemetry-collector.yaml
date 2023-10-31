@@ -1,0 +1,26 @@
+apiVersion: opentelemetry.io/v1alpha1
+kind: OpenTelemetryCollector
+metadata:
+  name: opentelemetry-demo
+spec:
+  config: |
+    processors:
+      batch/traces:
+        timeout: 1s
+        send_batch_size: 50
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+          http:
+    service:
+      pipelines:
+        traces:
+          exporters:
+            - otlp/data-prepper
+          processors: [batch/traces]
+          receivers:
+            - otlp
+    exporters:
+      otlp/data-prepper:
+        endpoint: opensearch-data-prepper.opensearch:21890
